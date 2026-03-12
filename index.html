@@ -619,6 +619,53 @@
 					});
 				});
 			}
+
+		/* ==========================================================================
+           4. Google Analytics (GA4) - Defer on Interaction or 3 Seconds
+           ========================================================================== */
+        const GA_MEASUREMENT_ID = 'G-K3HQ47MVGR'; // <-- REPLACE THIS WITH YOUR GA4 ID
+        let gaLoaded = false;
+        let gaFallbackTimeout;
+
+        function loadGoogleAnalytics() {
+            if (gaLoaded) return;
+            gaLoaded = true;
+
+            // Clear the 3-second timeout if user interacted early
+            clearTimeout(gaFallbackTimeout);
+
+            // Remove the event listeners so this only runs once
+            const triggerEvents = ['scroll', 'mousemove', 'touchstart', 'click', 'keydown'];
+            triggerEvents.forEach(event => {
+                window.removeEventListener(event, loadGoogleAnalytics, { passive: true });
+            });
+
+            // Create and inject the GA script tag
+            const script = document.createElement('script');
+            script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+            script.async = true;
+            document.head.appendChild(script);
+
+            // Initialize the datalayer and setup tracking
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', GA_MEASUREMENT_ID, {
+                'page_path': window.location.pathname,
+                'send_page_view': true
+            });
+        }
+
+        // Set up interaction listeners (passive for scrolling performance)
+        const gaTriggerEvents = ['scroll', 'mousemove', 'touchstart', 'click', 'keydown'];
+        gaTriggerEvents.forEach(event => {
+            window.addEventListener(event, loadGoogleAnalytics, { passive: true, once: true });
+        });
+
+        // Fallback: load analytics automatically after 3000ms (3 seconds) if no interaction
+        gaFallbackTimeout = setTimeout(loadGoogleAnalytics, 3000);
+
+		
     </script>
 
 	<script type="application/ld+json">
@@ -697,4 +744,5 @@
 </body>
 
 </html>
+
 
